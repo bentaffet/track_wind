@@ -2,13 +2,18 @@ import math
 import requests
 from PIL import Image
 from io import BytesIO
+from dotenv import load_dotenv
+import os
 
 # --- PARAMETERS ---
 lat = 41.577207977407184
 lon = -72.6816897262393
 size_pixels = 650   
 meters = 650        
-api_key = "AIzaSyDZJrtl1rpRYhbfxiw0W9ftl5Dp4KGMyEE"
+load_dotenv()
+
+api_key = os.getenv("API_KEY")
+
 
 # --- FUNCTION TO ESTIMATE ZOOM LEVEL ---
 def zoom_level_for_meters(lat, map_width_meters, image_width_pixels):
@@ -43,6 +48,3 @@ if response.status_code == 200:
 else:
     print("Error fetching map:", response.text)
 
-
-
-api_key = "AIzaSyDZJrtl1rpRYhbfxiw0W9ftl5Dp4KGMyEE"
