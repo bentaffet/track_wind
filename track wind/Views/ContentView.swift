@@ -47,6 +47,18 @@ struct ContentView: View {
     @State private var dateTimes: [Date] = []
     @State private var dateToIndex: [Date: Int] = [:]
     
+    // Add this at the top of ContentView, after your @State variables
+    let directionMap: [String: Int] = [
+        "north": 0,
+        "northeast": 45,
+        "east": 90,
+        "southeast": 135,
+        "south": 180,
+        "southwest": 225,
+        "west": 270,
+        "northwest": 315
+    ]
+    
     let service = WeatherService()
     
     // MARK: - Fetch weather
@@ -147,9 +159,7 @@ struct ContentView: View {
                         TextField("Longitude", text: $longitude)
                             .keyboardType(.decimalPad)
                             .textFieldStyle(.roundedBorder)
-                        TextField("Home Straight Direction (°)", text: $homeDir)
-                            .keyboardType(.decimalPad)
-                            .textFieldStyle(.roundedBorder)
+                        DirectionPicker(homeDir: $homeDir)
                         
                         Button("Update Weather") { fetchWeather() }
                             .buttonStyle(.borderedProminent)
