@@ -38,4 +38,19 @@ struct TimeUtils {
     static func toDate(_ isoString: String) -> Date? {
         inputFormatter.date(from: isoString)
     }
+    
+    static let shortFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "ha"       // "3PM"
+        f.timeZone = TimeZone(identifier: "America/New_York") // ✅ force Eastern
+        return f
+    }()
+
+    static func shortTime(_ timeString: String) -> String {
+        guard let date = toDate(timeString) else {
+            return timeString
+        }
+        return shortFormatter.string(from: date)
+    }
 }
+

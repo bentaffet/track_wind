@@ -37,9 +37,9 @@ struct ContentView: View {
     @State private var backCategory: String = ""
     @State private var unit: WindUnit = .ms
     
-    @State private var latitude: String = "41.55"
-    @State private var longitude: String = "-72.66"
-    @State private var homeDir: String = "261"
+    @State private var latitude: String = ""
+    @State private var longitude: String = ""
+    @State private var homeDir: String = ""
     
     @State private var selectedCoordinate: CLLocationCoordinate2D?
     @State private var showMap = false
@@ -47,17 +47,7 @@ struct ContentView: View {
     @State private var dateTimes: [Date] = []
     @State private var dateToIndex: [Date: Int] = [:]
     
-    // Add this at the top of ContentView, after your @State variables
-    let directionMap: [String: Int] = [
-        "north": 0,
-        "northeast": 45,
-        "east": 90,
-        "southeast": 135,
-        "south": 180,
-        "southwest": 225,
-        "west": 270,
-        "northwest": 315
-    ]
+
     
     let service = WeatherService()
     
@@ -135,76 +125,148 @@ struct ContentView: View {
     }
     
     // MARK: - Body
+    
     var body: some View {
-        ZStack {
-            LinearGradient(colors: [Color.blue.opacity(0.15), Color.white],
-                           startPoint: .top, endPoint: .bottom)
+        NavigationStack {
+            ZStack {
+                LinearGradient(
+                    colors: [Color.blue.opacity(0.15), Color.white],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
                 .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(spacing: 20) {
-                    
-                    header
-                    
-                    // Map picker
-                    Button("Select Location on Map") { showMap = true }
-                        .buttonStyle(.borderedProminent)
-
-                    
-                    // Manual inputs
-                    VStack(spacing: 12) {
-                        TextField("Latitude", text: $latitude)
-                            .keyboardType(.decimalPad)
-                            .textFieldStyle(.roundedBorder)
-                        TextField("Longitude", text: $longitude)
-                            .keyboardType(.decimalPad)
-                            .textFieldStyle(.roundedBorder)
-                        DirectionPicker(homeDir: $homeDir)
+                
+                ScrollView {
+                    VStack(spacing: 20) {
                         
-                        Button("Update Weather") { fetchWeather() }
-                            .buttonStyle(.borderedProminent)
+                        header
+                        
+                        // MARK: - Track / Manual / Map Inputs
+                        VStack(spacing: 16) {
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                TrackMatcher(
+                                    latitude: $latitude,
+                                    longitude: $longitude,
+                                    homeDir: $homeDir
+                                )
+                            }
+
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Or enter manually")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+
+                                VStack(spacing: 10) {
+                                    
+                                    HStack {
+                                        TextField("Latitude", text: $latitude)
+                                            .keyboardType(.decimalPad)
+                                            .textFieldStyle(.roundedBorder)
+
+                                        TextField("Longitude", text: $longitude)
+                                            .keyboardType(.decimalPad)
+                                            .textFieldStyle(.roundedBorder)
+                                    }
+                                    
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Button(action: { showMap = true }) {
+                                            HStack {
+                                                Image(systemName: "map")
+                                                Text("Select Location on Map")
+                                            }
+                                            .padding(8)
+                                            .frame(maxWidth: .infinity)
+                                            .background(Color.gray.opacity(0.1))
+                                            .foregroundColor(.primary)
+                                            .cornerRadius(8)
+                                        }
+                                    }
+
+                                    TextField("Home Straight Direction (°)", text: $homeDir)
+                                        .keyboardType(.decimalPad)
+                                        .textFieldStyle(.roundedBorder)
+                                }
+                            }
+                        }
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(12)
+                        
+                        Button(action: { fetchWeather() }) {
+                            HStack {
+                                Spacer()
+                                Text("Update Weather")
+                                    .font(.headline)
+                                    .bold()
+                                Spacer()
+                            }
+                            .padding(.vertical, 10)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.blue)
+                        .controlSize(.regular)
+
+                        
+                        if let wind = currentWind {
+                            
+                            TimePickerCard(
+                                dates: dateTimes,
+                                selectedDate: $selectedDate
+                            )
+                            
+                            windSummaryCard(
+                                speed: unit.convert(fromKmh: wind.speed),
+                                direction: wind.direction,
+                                gust: unit.convert(fromKmh: wind.gust),
+                                unit: unit
+                            )
+                            
+                            RecommendationCard(
+                                homeMps: homeSpeed,
+                                backMps: backSpeed,
+                                homeGustMps: homeGustSpeed,
+                                backGustMps: backGustSpeed,
+                                homeCategory: homeCategory,
+                                backCategory: backCategory,
+                                unit: unit
+                            )
+                            
+                            if let weatherData = weatherData, !dateTimes.isEmpty {
+                                NavigationLink(
+                                    destination: HourlyForecastView(
+                                        weatherData: weatherData,
+                                        dates: dateTimes,
+                                        homeDir: Double(homeDir) ?? 0,
+                                        unit: $unit
+                                    )
+                                ) {
+                                    Text("View Hourly Forecast")
+                                        .font(.headline)
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.borderedProminent)
+                            
+                            }
+                            
+                            TrackCard(
+                                homeDir: Double(homeDir) ?? 0,
+                                windDirection: currentWind?.direction
+                            )
+                        }
+
+
+                        
+                        
+                        Picker("Units", selection: $unit) {
+                            ForEach(WindUnit.allCases, id: \.self) { u in
+                                Text(u.rawValue).tag(u)
+                            }
+                        }
+                        .pickerStyle(.segmented)
                     }
                     .padding()
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(12)
-                    
-                    TimePickerCard(
-                        dates: dateTimes,
-                        selectedDate: $selectedDate
-                    )
-                    
-                    if let wind = currentWind {
-                        windSummaryCard(
-                            speed: unit.convert(fromKmh: wind.speed),
-                            direction: wind.direction,
-                            gust: unit.convert(fromKmh: wind.gust),
-                            unit: unit
-                        )
-                    }
-                    
-                    RecommendationCard(
-                        homeMps: homeSpeed,
-                        backMps: backSpeed,
-                        homeGustMps: homeGustSpeed,
-                        backGustMps: backGustSpeed,
-                        homeCategory: homeCategory,
-                        backCategory: backCategory,
-                        unit: unit
-                    )
-                    
-                    TrackCard(
-                        homeDir: Double(homeDir) ?? 0,
-                        windDirection: currentWind?.direction
-                    )
-                    
-                    Picker("Units", selection: $unit) {
-                        ForEach(WindUnit.allCases, id: \.self) { u in
-                            Text(u.rawValue).tag(u)
-                        }
-                    }
-                    .pickerStyle(.segmented)
                 }
-                .padding()
             }
         }
         .fullScreenCover(isPresented: $showMap) {
