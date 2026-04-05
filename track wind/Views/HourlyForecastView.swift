@@ -34,8 +34,8 @@ func color(for value: Double) -> Color {
 
 struct HourlyForecastView: View {
     
-    let weatherData: WeatherResponse       // full weather response
-    let dates: [Date]                      // precomputed Date objects (future times)
+    let weatherData: WeatherResponse
+    let dates: [Date]
     let homeDir: Double
     @Binding var unit: WindUnit
     

@@ -54,7 +54,7 @@ struct TimePickerCard: View {
                     .pickerStyle(.wheel)
                     .frame(height: 120)
                     .clipped()
-                    .onChange(of: selectedDayIndex) { _ in
+                    .onChange(of: selectedDayIndex) {
                         selectedHourIndex = 0
                         selectedDate = selectedHour
                     }

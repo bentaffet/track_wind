@@ -64,28 +64,22 @@ struct ContentView: View {
             DispatchQueue.main.async {
                 self.weatherData = result
 
-                // Convert all times to Date objects
                 let allDates: [Date] = result.hourly.time.compactMap { TimeUtils.toDate($0) }
 
-                // Keep only future times
                 let now = Date()
                 let futureDates = allDates.filter { $0 > now }
 
-                // If no future times, fallback to all
                 let datesToUse = futureDates.isEmpty ? allDates : futureDates
                 self.dateTimes = datesToUse
 
-                // Build fast lookup: date -> index
                 self.dateToIndex = Dictionary(uniqueKeysWithValues: zip(datesToUse, datesToUse.indices))
 
-                // Set initial selected date
                 if let firstDate = datesToUse.first {
                     self.selectedDate = firstDate
                     self.selectedIndex = self.dateToIndex[firstDate] ?? 0
                     updateResult(result: result)
                 }
 
-                // Optional: store string times for display elsewhere
                 self.times = datesToUse.map { TimeUtils.inputFormatter.string(from: $0) }
             }
         }
@@ -140,58 +134,13 @@ struct ContentView: View {
                     VStack(spacing: 20) {
                         
                         header
-                        
-                        // MARK: - Track / Manual / Map Inputs
-                        VStack(spacing: 16) {
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                TrackMatcher(
-                                    latitude: $latitude,
-                                    longitude: $longitude,
-                                    homeDir: $homeDir
-                                )
-                            }
-
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Or enter manually")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-
-                                VStack(spacing: 10) {
-                                    
-                                    HStack {
-                                        TextField("Latitude", text: $latitude)
-                                            .keyboardType(.decimalPad)
-                                            .textFieldStyle(.roundedBorder)
-
-                                        TextField("Longitude", text: $longitude)
-                                            .keyboardType(.decimalPad)
-                                            .textFieldStyle(.roundedBorder)
-                                    }
-                                    
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        Button(action: { showMap = true }) {
-                                            HStack {
-                                                Image(systemName: "map")
-                                                Text("Select Location on Map")
-                                            }
-                                            .padding(8)
-                                            .frame(maxWidth: .infinity)
-                                            .background(Color.gray.opacity(0.1))
-                                            .foregroundColor(.primary)
-                                            .cornerRadius(8)
-                                        }
-                                    }
-
-                                    TextField("Home Straight Direction (°)", text: $homeDir)
-                                        .keyboardType(.decimalPad)
-                                        .textFieldStyle(.roundedBorder)
-                                }
-                            }
-                        }
-                        .padding()
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(12)
+                    
+                        EnterInfoCard(
+                            latitude: $latitude,
+                            longitude: $longitude,
+                            homeDir: $homeDir,
+                            showMap: $showMap
+                        )
                         
                         Button(action: { fetchWeather() }) {
                             HStack {
@@ -270,13 +219,20 @@ struct ContentView: View {
             }
         }
         .fullScreenCover(isPresented: $showMap) {
-            MapPickerView { coordinate in
-                self.selectedCoordinate = coordinate
-                self.latitude = "\(coordinate.latitude)"
-                self.longitude = "\(coordinate.longitude)"
-                self.showMap = false
-                fetchWeather()
-            }
+            MapPickerView(
+                initialCoordinate: {
+                    if let lat = Double(latitude),
+                       let lon = Double(longitude) {
+                        return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+                    } else {
+                        return nil // fallback to current location or default
+                    }
+                }(),
+                onSelect: { coord in
+                    latitude = "\(coord.latitude)"
+                    longitude = "\(coord.longitude)"
+                }
+            )
         }
         .onChange(of: selectedDate) {
             if let result = weatherData,

@@ -5,32 +5,33 @@
 
 import SwiftUI
 import MapKit
-
-struct MapPin: Identifiable {
-    let id = UUID()
-    let coordinate: CLLocationCoordinate2D
-}
-
-import SwiftUI
-import MapKit
+import CoreLocation
 
 struct MapPickerView: View {
     @Environment(\.dismiss) var dismiss
 
-    @State private var region = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 41.55, longitude: -72.66),
-        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-    )
-
     let onSelect: (CLLocationCoordinate2D) -> Void
+    var initialCoordinate: CLLocationCoordinate2D? // Coordinates already set
+    private let defaultCoordinate = CLLocationCoordinate2D(latitude: 41.55, longitude: -72.66)
+
+    @State private var region: MKCoordinateRegion
+    @State private var locationManager = CLLocationManager()
+    
+    init(initialCoordinate: CLLocationCoordinate2D? = nil, onSelect: @escaping (CLLocationCoordinate2D) -> Void) {
+        self.initialCoordinate = initialCoordinate
+        self.onSelect = onSelect
+        // Temporarily set region; will update in onAppear
+        _region = State(initialValue: MKCoordinateRegion(
+            center: initialCoordinate ?? CLLocationCoordinate2D(latitude: 41.55, longitude: -72.66),
+            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        ))
+    }
 
     var body: some View {
         ZStack {
-            // Map view
             Map(coordinateRegion: $region, interactionModes: .all)
                 .ignoresSafeArea()
 
-            // Pin always at center
             Image(systemName: "mappin.circle.fill")
                 .font(.title)
                 .foregroundColor(.red)
@@ -39,7 +40,6 @@ struct MapPickerView: View {
             VStack {
                 HStack {
                     Spacer()
-                    // Cancel button
                     Button("Cancel") {
                         dismiss()
                     }
@@ -49,7 +49,6 @@ struct MapPickerView: View {
                     .padding()
                 }
                 Spacer()
-                // Confirm button
                 Button("Use This Location") {
                     onSelect(region.center)
                     dismiss()
@@ -60,21 +59,20 @@ struct MapPickerView: View {
                 .padding(.bottom)
             }
         }
-    }
-}
-
-// Helper to convert tap location to coordinate
-extension GeometryProxy {
-    func convert(valueLocation: CGPoint, in size: CGSize, region: MKCoordinateRegion) -> CLLocationCoordinate2D {
-        let xPercent = valueLocation.x / size.width
-        let yPercent = valueLocation.y / size.height
-        
-        let lonDelta = region.span.longitudeDelta
-        let latDelta = region.span.latitudeDelta
-        
-        let lon = region.center.longitude + (xPercent - 0.5) * lonDelta
-        let lat = region.center.latitude - (yPercent - 0.5) * latDelta
-        
-        return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        .onAppear {
+            // If initial coordinates exist, use them
+            if let coord = initialCoordinate {
+                region.center = coord
+            } else {
+                // Otherwise, request current location
+                locationManager.requestWhenInUseAuthorization()
+                if let current = locationManager.location?.coordinate {
+                    region.center = current
+                } else {
+                    // fallback: defaultCoordinate already set
+                    region.center = defaultCoordinate
+                }
+            }
+        }
     }
 }
