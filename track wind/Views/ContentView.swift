@@ -47,6 +47,14 @@ struct ContentView: View {
     @State private var dateTimes: [Date] = []
     @State private var dateToIndex: [Date: Int] = [:]
     
+    @State private var tracks: [Track] = [
+        Track(name: "Wesleyan University", latitude: 41.555, longitude: -72.656, direction: 261),
+        Track(name: "Amherst College", latitude: 42.368514, longitude: -72.524181, direction: 120),
+        Track(name: "Trinity College", latitude: 41.748, longitude: -72.690, direction: 357),
+        Track(name: "Connecticut College", latitude: 41.381476, longitude: -72.101230, direction: 166),
+        Track(name: "Coast Guard Academy", latitude: 41.375648, longitude: -72.097870, direction: 170)
+    ]
+    
 
     
     let service = WeatherService()
@@ -146,13 +154,14 @@ struct ContentView: View {
                 ScrollView {
                     VStack(spacing: 20) {
                         
-                        header
+                        HeaderView(tracks: $tracks)
                     
                         EnterInfoCard(
                             latitude: $latitude,
                             longitude: $longitude,
                             homeDir: $homeDir,
-                            showMap: $showMap
+                            showMap: $showMap,
+                            tracks: $tracks
                         )
                         
                         Button(action: { fetchWeather() }) {
@@ -193,6 +202,7 @@ struct ContentView: View {
                                 backCategory: backCategory,
                                 unit: unit
                             )
+                            
                             
                             if let weatherData = weatherData, !dateTimes.isEmpty {
                                 NavigationLink(

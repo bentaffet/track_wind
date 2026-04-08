@@ -13,6 +13,7 @@ struct EnterInfoCard: View {
     @Binding var longitude: String
     @Binding var homeDir: String
     @Binding var showMap: Bool
+    @Binding var tracks: [Track]
 
     // MARK: - New state
     @State private var inputMode: InputMode = .map
@@ -34,7 +35,8 @@ struct EnterInfoCard: View {
             TrackMatcher(
                 latitude: $latitude,
                 longitude: $longitude,
-                homeDir: $homeDir
+                homeDir: $homeDir,
+                tracks: $tracks
             )
             
             Text("Or")
