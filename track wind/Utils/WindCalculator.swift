@@ -19,15 +19,36 @@ struct WindCalculator {
         return (effect, diff)
     }
     
-    static func windCategory(_ effectMps: Double) -> String {
-        switch effectMps {
-        case let x where x > 2: return "Strong tailwind"
-        case let x where x > 0.5: return "Tailwind"
-        case let x where x > 0.1: return "Slight tailwind"
-        case let x where x > -0.1: return "Neutral / crosswind"
-        case let x where x > -0.5: return "Slight headwind"
-        case let x where x > -2: return "Headwind"
-        default: return "Strong headwind"
+    static func windCategory(effectKmh: Double, windDir: Double, homeDir: Double) -> String {
+        let angle = (windDir - homeDir).truncatingRemainder(dividingBy: 360)
+        let normalized = angle > 180 ? angle - 360 : angle  // [-180, 180]
+
+        let absEffect = abs(effectKmh)
+
+        // Strength bucket
+        let strength: String
+        switch absEffect {
+        case 0..<1: strength = "Very light"
+        case 1..<5: strength = "Light"
+        case 5..<15: strength = "Moderate"
+        default: strength = "Strong"
         }
+
+        // Direction type
+        let direction: String
+        switch normalized {
+        case -30...30:
+            direction = "headwind"
+        case 150...180, -180 ... -150:
+            direction = "tailwind"
+        case 30..<150:
+            direction = "crosswind from right"
+        case -150..<(-30):
+            direction = "crosswind from left"
+        default:
+            direction = "variable"
+        }
+
+        return "\(strength) \(direction)"
     }
 }

@@ -9,7 +9,7 @@ import Foundation
 
 class WeatherService {
     func fetchWeather(lat: Double, lon: Double, completion: @escaping (WeatherResponse?) -> Void) {
-        let urlString = "https://api.open-meteo.com/v1/forecast?latitude=\(lat)&longitude=\(lon)&hourly=wind_direction_10m,wind_speed_10m,wind_gusts_10m&forecast_days=3"
+        let urlString = "https://api.open-meteo.com/v1/forecast?latitude=\(lat)&longitude=\(lon)&hourly=wind_direction_10m,wind_speed_10m,wind_gusts_10m&forecast_days=7"
         
         guard let url = URL(string: urlString) else {
             print("Invalid URL: \(urlString)")

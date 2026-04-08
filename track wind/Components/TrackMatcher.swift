@@ -36,7 +36,9 @@ struct TrackMatcher: View {
     let tracks: [Track] = [
         Track(name: "Wesleyan University", latitude: 41.555, longitude: -72.656, direction: 261),
         Track(name: "Amherst College", latitude: 42.368514, longitude: -72.524181, direction: 120),
-        Track(name: "Trinity College", latitude: 41.748, longitude: -72.690, direction: 357)
+        Track(name: "Trinity College", latitude: 41.748, longitude: -72.690, direction: 357),
+        Track(name: "Connecticut College", latitude: 41.381476, longitude: -72.101230, direction: 166),
+        Track(name: "Coast Guard Academy", latitude: 41.375648, longitude: -72.097870, direction: 170)
     ]
     
 

@@ -37,6 +37,7 @@ struct EnterInfoCard: View {
                 homeDir: $homeDir
             )
             
+            Text("Or")
             
             // Mode switcher
             Picker("Input Mode", selection: $inputMode) {

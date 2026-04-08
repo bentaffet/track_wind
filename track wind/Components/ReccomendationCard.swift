@@ -7,95 +7,107 @@
 
 import SwiftUI
 
-extension RecommendationCard {
-    
-    func color(for category: String) -> Color {
-        switch category {
-        case let x where x.lowercased().contains("tailwind"):
-            return .green
-        case let x where x.lowercased().contains("headwind"):
-            return .red
-        default:
-            return .black
-        }
-    }
-}
-
-extension RecommendationCard {
-    
-    func straightView(title: String, mps: Double, category: String) -> some View {
-        let converted = unit.convert(fromKmh: mps)
-
-        return VStack(spacing: 6) {
-            Text(title)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            
-            Text("\(String(format: "%.1f", converted)) \(unit.rawValue)")
-                .font(.title2)
-                .bold()
-                .foregroundColor(color(for: category))
-            
-            Text(category)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .background(Color.white.opacity(0.5))
-        .cornerRadius(12)
-    }
-}
-
-
-
 struct RecommendationCard: View {
+
     let homeMps: Double
     let backMps: Double
-    let homeGustMps : Double
-    let backGustMps : Double
+    let homeGustMps: Double
+    let backGustMps: Double
+
     let homeCategory: String
     let backCategory: String
+
     let unit: WindUnit
-    
+
+    // MARK: - Color
+
+    func color(for category: String) -> Color {
+        let lower = category.lowercased()
+
+        if lower.contains("headwind") {
+            return .red.opacity(0.75)
+        } else if lower.contains("tailwind") {
+            return .green.opacity(0.75)
+        } else if lower.contains("crosswind") {
+            return .blue.opacity(0.55)
+        } else {
+            return .gray.opacity(0.25)
+        }
+    }
+
+    // MARK: - Cell View
+
+    @ViewBuilder
+    func straightView(
+        title: String,
+        valueMps: Double,
+        category: String
+    ) -> some View {
+
+        let converted = unit.convert(fromKmh: valueMps)
+
+        VStack(spacing: 6) {
+
+            Text(title)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            Text("\(String(format: "%.1f", converted)) \(unit.rawValue)")
+                .font(.title3)
+                .bold()
+                .foregroundStyle(color(for: category))
+
+            Text(category)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .padding(.horizontal, 6)
+        .background(Color.white.opacity(0.55))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    // MARK: - Body
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            
+
             Text("Straights")
                 .font(.headline)
-            
-            HStack(spacing: 20) {
+
+            HStack(spacing: 16) {
                 straightView(
                     title: "Home Straight",
-                    mps: homeMps,
+                    valueMps: homeMps,
                     category: homeCategory
                 )
-                
+
                 straightView(
                     title: "Back Straight",
-                    mps: backMps,
+                    valueMps: backMps,
                     category: backCategory
                 )
             }
-            
-            HStack(spacing: 20) {
+
+            HStack(spacing: 16) {
                 straightView(
                     title: "Home Gust",
-                    mps: homeGustMps,
+                    valueMps: homeGustMps,
                     category: homeCategory
                 )
-                
+
                 straightView(
                     title: "Back Gust",
-                    mps: homeGustMps,
+                    valueMps: backGustMps,
                     category: backCategory
                 )
             }
-            
-           
         }
         .padding()
         .background(.ultraThinMaterial)
-        .cornerRadius(16)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 }

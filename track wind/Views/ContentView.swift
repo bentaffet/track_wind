@@ -87,7 +87,10 @@ struct ContentView: View {
     
     // MARK: - Update wind results
     func updateResult(result: WeatherResponse) {
+        // windSpeed is in km/h
         let windSpeed = result.hourly.wind_speed_10m[selectedIndex]
+        print("windSpeed")
+        print(windSpeed)
         let windDirFrom = result.hourly.wind_direction_10m[selectedIndex]
         let windGust = result.hourly.wind_gusts_10m[selectedIndex]
         let time = result.hourly.time[selectedIndex]
@@ -95,21 +98,31 @@ struct ContentView: View {
         let windTo = (windDirFrom + 180).truncatingRemainder(dividingBy: 360)
         guard let homeDirValue = Double(homeDir) else { return }
         
+        // homeCalc uses km/h
         let homeCalc = WindCalculator.effectiveWind(runDir: homeDirValue, windTo: windTo, windSpeed: windSpeed)
         let backCalc = WindCalculator.effectiveWind(runDir: homeDirValue + 180, windTo: windTo, windSpeed: windSpeed)
-        
+
         let homeGustCalc = WindCalculator.effectiveWind(runDir: homeDirValue, windTo: windTo, windSpeed: windGust)
         let backGustCalc = WindCalculator.effectiveWind(runDir: homeDirValue + 180, windTo: windTo, windSpeed: windGust)
         
         homeSpeed = homeCalc.0
         backSpeed = backCalc.0
+
         homeGustSpeed = homeGustCalc.0
         backGustSpeed = backGustCalc.0
     
         
-        homeCategory = WindCalculator.windCategory(homeSpeed)
-        backCategory = WindCalculator.windCategory(backSpeed)
-        
+        homeCategory = WindCalculator.windCategory(
+            effectKmh: homeSpeed,
+            windDir: windDirFrom,
+            homeDir: homeDirValue
+        )
+
+        backCategory = WindCalculator.windCategory(
+            effectKmh: backSpeed,
+            windDir: windDirFrom,
+            homeDir: homeDirValue + 180
+        )
         currentWind = (speed: windSpeed, direction: windDirFrom, gust: windGust, time: time)
     }
     
