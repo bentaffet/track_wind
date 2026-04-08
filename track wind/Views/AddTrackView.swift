@@ -10,7 +10,6 @@ import SwiftUI
 struct AddTrackView: View {
 
     @Environment(\.dismiss) private var dismiss
-
     @Binding var tracks: [Track]
 
     @State private var name = ""
@@ -19,35 +18,29 @@ struct AddTrackView: View {
     @State private var direction = ""
 
     var body: some View {
-        NavigationView {
+        Form {
 
-            Form {
-
-                Section("Track Info") {
-                    TextField("Name", text: $name)
-
-                    TextField("Latitude", text: $latitude)
-                        .keyboardType(.decimalPad)
-
-                    TextField("Longitude", text: $longitude)
-                        .keyboardType(.decimalPad)
-
-                    TextField("Direction (°)", text: $direction)
-                        .keyboardType(.decimalPad)
-                }
-
-                Section {
-                    Button("Add Track") {
-                        addTrack()
-                    }
-                    .disabled(!isValid)
-                }
+            Section("Track Info") {
+                TextField("Name", text: $name)
+                TextField("Latitude", text: $latitude)
+                    .keyboardType(.decimalPad)
+                TextField("Longitude", text: $longitude)
+                    .keyboardType(.decimalPad)
+                TextField("Direction (°)", text: $direction)
+                    .keyboardType(.decimalPad)
             }
-            .navigationTitle("Add Track")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+
+            Section {
+                Button("Add Track") {
+                    addTrack()
                 }
+                .disabled(!isValid)
+            }
+        }
+        .navigationTitle("Add Track")
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") { dismiss() }
             }
         }
     }
