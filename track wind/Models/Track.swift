@@ -9,10 +9,14 @@
 import Foundation
 import SwiftUI
 
-struct Track: Identifiable {
+struct Track: Identifiable, Equatable {
     let id = UUID()
     let name: String
     let latitude: Double
     let longitude: Double
     let direction: Double
+
+    static func == (lhs: Track, rhs: Track) -> Bool {
+        lhs.id == rhs.id
+    }
 }

@@ -75,20 +75,35 @@ struct ContentView: View {
                 let allDates: [Date] = result.hourly.time.compactMap { TimeUtils.toDate($0) }
 
                 let now = Date()
-                let futureDates = allDates.filter { $0 > now }
+                let indexedTimes = Array(result.hourly.time.enumerated())
 
-                let datesToUse = futureDates.isEmpty ? allDates : futureDates
-                self.dateTimes = datesToUse
+                let futureIndexedTimes = indexedTimes.filter {
+                    guard let date = TimeUtils.toDate($0.element) else { return false }
+                    return date > now
+                }
 
-                self.dateToIndex = Dictionary(uniqueKeysWithValues: zip(datesToUse, datesToUse.indices))
+                let timesToUse = futureIndexedTimes.isEmpty ? indexedTimes : futureIndexedTimes
 
-                if let firstDate = datesToUse.first {
-                    self.selectedDate = firstDate
-                    self.selectedIndex = self.dateToIndex[firstDate] ?? 0
+                self.dateTimes = timesToUse.compactMap { TimeUtils.toDate($0.element) }
+
+                self.dateToIndex = Dictionary(uniqueKeysWithValues: zip(
+                    self.dateTimes,
+                    timesToUse.map { $0.offset }
+                ))
+
+                
+
+                if let existingIndex = dateToIndex[selectedDate] {
+                    selectedIndex = existingIndex
+                    updateResult(result: result)
+                } else if let firstDate = dateTimes.first,
+                          let index = dateToIndex[firstDate] {
+                    selectedDate = firstDate
+                    selectedIndex = index
                     updateResult(result: result)
                 }
 
-                self.times = datesToUse.map { TimeUtils.inputFormatter.string(from: $0) }
+                self.times = self.dateTimes.map { TimeUtils.inputFormatter.string(from: $0) }
             }
         }
     }
@@ -134,7 +149,7 @@ struct ContentView: View {
         currentWind = (speed: windSpeed, direction: windDirFrom, gust: windGust, time: time)
     }
     
-    
+
     func indexForSelectedDate() -> Int? {
         return dateToIndex[selectedDate]
     }
@@ -154,7 +169,8 @@ struct ContentView: View {
                 ScrollView {
                     VStack(spacing: 20) {
                         
-                        HeaderView(tracks: $tracks)
+                        
+                        HeaderView(tracks: $tracks, showMap: $showMap)
                     
                         EnterInfoCard(
                             latitude: $latitude,
@@ -193,7 +209,7 @@ struct ContentView: View {
                                 unit: unit
                             )
                             
-                            RecommendationCard(
+                            RecommendationCard2(
                                 homeMps: homeSpeed,
                                 backMps: backSpeed,
                                 homeGustMps: homeGustSpeed,
@@ -229,17 +245,25 @@ struct ContentView: View {
 
 
                         
+   
                         
-                        Picker("Units", selection: $unit) {
-                            ForEach(WindUnit.allCases, id: \.self) { u in
-                                Text(u.rawValue).tag(u)
-                            }
-                        }
-                        .pickerStyle(.segmented)
                     }
                     .padding()
                 }
             }
+            VStack {
+                Picker("Units", selection: $unit) {
+                    ForEach(WindUnit.allCases, id: \.self) { u in
+                        Text(u.rawValue).tag(u)
+                    }
+                }
+                .pickerStyle(.segmented)
+                
+                .frame(maxWidth: 300)
+                
+                
+            }
+            
         }
         .fullScreenCover(isPresented: $showMap) {
             MapPickerView(

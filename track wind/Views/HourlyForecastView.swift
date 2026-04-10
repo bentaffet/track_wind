@@ -63,13 +63,13 @@ struct HourRowView: View {
 func headerCell(_ text: String) -> some View {
     Text(text)
         .font(.headline)
-        .frame(width: 90, height: 40)
+        .frame(maxWidth: .infinity, minHeight: 40)
         .background(Color.gray.opacity(0.2))
 }
 
 func cell(_ text: String) -> some View {
     Text(text)
-        .frame(width: 90, height: 40)
+        .frame(maxWidth: .infinity, minHeight: 40)
         .background(Color.white.opacity(0.8))
 }
 
@@ -145,7 +145,7 @@ struct HourlyForecastView: View {
     var body: some View {
         VStack {
 
-            ScrollView([.horizontal, .vertical]) {
+            ScrollView {
 
                 VStack(spacing: 0) {
 

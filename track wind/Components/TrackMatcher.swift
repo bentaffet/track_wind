@@ -5,13 +5,6 @@
 //  Created by Benjamin Taffet on 4/3/26.
 //
 
-//
-//  TrackMatcher.swift
-//  track wind
-//
-//  Created by Benjamin Taffet on 4/3/26.
-//
-
 import SwiftUI
 
 
@@ -59,7 +52,7 @@ struct TrackMatcher: View {
             }
         }
         .sheet(isPresented: $showPicker) {
-            TrackPickerSheet(tracks: tracks) { track in
+            TrackPickerSheet(tracks: $tracks) { track in
                 select(track)
             }
         }
@@ -72,3 +65,6 @@ struct TrackMatcher: View {
         selectedTrackName = track.name
     }
 }
+
+
+

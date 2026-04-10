@@ -10,6 +10,8 @@ import SwiftUI
 struct HeaderView: View {
 
     @Binding var tracks: [Track]
+    @Binding var showMap: Bool
+
 
     var body: some View {
         HStack {
@@ -19,7 +21,10 @@ struct HeaderView: View {
             Spacer()
 
             NavigationLink {
-                AddTrackView(tracks: $tracks)
+                AddTrackView(
+                    tracks: $tracks,
+                    showMap: $showMap
+                )
             } label: {
                 Image(systemName: "plus")
                     .font(.system(size: 18, weight: .bold))
